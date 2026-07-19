@@ -103,7 +103,46 @@ def leer_voltaje():
 Esta función es la que usa el script de captación (`src/captacion_datos.py`) para
 registrar el voltaje junto con la velocidad y la inclinación.
 
-## 7. Verificación en el equipo real
+## 7. Limitación del estimado y por qué "no varía"
+
+En la práctica `get_battery()` reporta el porcentaje en **saltos gruesos** (en la
+primera prueba quedó clavado en 50 %), así que el voltaje derivado es casi una
+constante: sirve como referencia del nivel, **no** para ver la caída de voltaje
+bajo carga. Además existe `cyberpi.get_extra_battery()` — la batería del
+**mBot2 Shield**, que es la que alimenta los motores; esa es la relevante para
+el análisis de consumo (columna `bat2_pct` del CSV).
+
+## 8. Voltaje REAL con 2 resistencias (divisor en el puerto S1)
+
+El mBot2 puede leer voltajes analógicos en su puerto de extensión con
+`mbot2.read_analog("S1")` (0–100 sobre ~3,3 V). Como la batería llega a 4,2 V
+(más que el máximo del pin), se baja con un **divisor resistivo**:
+
+```
+batería (+) ──[ R1 = 10 kΩ ]──●── pin S1
+                              │
+                        [ R2 = 20 kΩ ]
+                              │
+batería (−) ──────────────────┴── GND del puerto
+```
+
+- `V_pin = V_bat × R2/(R1+R2) = V_bat × 0,667` → 4,2 V se leen como 2,8 V (seguro).
+- En el código: `V_bat = (lectura/100 × 3,3) × (R1+R2)/R2`.
+- Ya está implementado en `src/captacion_datos.py`: basta poner
+  `PIN_VOLTAJE = "S1"` cuando el divisor esté conectado. Sin conectar nada,
+  sigue usando la estimación por %.
+- Costo: **2 resistencias** (10 kΩ y 20 kΩ, o cualquier par con relación similar
+  que mantenga `V_pin < 3,3 V`). Con resistencias de kΩ el consumo del divisor
+  es despreciable (~140 µA).
+- ⚠️ Verificar en el conector del Shield cuál es GND antes de conectar, y
+  calibrar: medir una vez con multímetro (o usar el punto de carga llena
+  = 4,2 V) y ajustar `ADC_MAX`/`DIV_R2` en el código si hay desviación.
+
+Con esto el voltaje registrado sí muestra la **caída bajo carga** al subir la
+pendiente — exactamente lo que pide el análisis de consumo. (Para corriente y
+potencia reales sigue haciendo falta un INA219.)
+
+## 9. Verificación en el equipo real
 
 - [ ] Cargar la batería al 100 % y confirmar que `get_battery()` reporta ~100.
 - [ ] Ejecutar `leer_voltaje()` y confirmar que muestra ~4.2 V con batería llena.

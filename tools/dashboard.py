@@ -241,7 +241,8 @@ def fuente_demo(datos, config):
         if random.random() < 0.005:
             pct = max(5, pct - 1)
         volt = 3.3 + pct / 100 * 0.9
-        vel = 16 + 4 * math.sin(t / 4) + random.uniform(-2, 2) - abs(pitch) * 0.15
+        # el carrito "pierde fuerza" al subir: la velocidad cae con el pitch
+        vel = 18 + 2 * math.sin(t / 4) + random.uniform(-1.5, 1.5) - max(0, pitch) * 0.55
         vel2 = vel + random.uniform(-1.5, 1.5)
         dist += max(0, vel) / 60 * 15.1 * 0.15    # RPM -> cm con rueda de ~4,8 cm
         estado = random.choices([6, 4, 2, 14, 7, 8, 1, 0],

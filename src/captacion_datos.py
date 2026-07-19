@@ -48,15 +48,35 @@ VEL_FUERTE = 4          # rueda interior en corrección fuerte
 V_MIN = 3.3              # voltaje con batería vacía
 V_MAX = 4.2             # voltaje con batería llena
 
+# --- Voltaje REAL por divisor resistivo en el puerto de extensión (opcional) ---
+# El % de get_battery() casi no varía, así que el voltaje derivado es grueso.
+# Con 2 resistencias (batería+ → R1 → S1 → R2 → GND) se mide el voltaje REAL:
+#   se activa poniendo PIN_VOLTAJE = "S1"  (ver docs/01-medicion-voltaje.md §8)
+PIN_VOLTAJE = None       # "S1" cuando el divisor esté conectado; None = estimar por %
+DIV_R1 = 10000.0         # ohmios, resistencia superior (a batería +)
+DIV_R2 = 20000.0         # ohmios, resistencia inferior (a GND)
+ADC_MAX = 100.0          # mbot2.read_analog devuelve 0..100
+ADC_VREF = 3.3           # voltaje de referencia del ADC (V)
+
 
 # ---------------------------------------------------------------------
 # LECTURAS
 # ---------------------------------------------------------------------
 def leer_voltaje():
-    """Convierte el nivel de batería (%) a voltaje estimado (V)."""
+    """
+    Devuelve (pct, voltios). Si PIN_VOLTAJE está configurado, el voltaje es
+    REAL (divisor resistivo en el puerto de extensión); si no, se estima
+    desde el % de batería (grueso: el % casi no varía en recorridos cortos).
+    """
     pct = cyberpi.get_battery()                 # 0–100 (%)
-    v = V_MIN + (pct / 100) * (V_MAX - V_MIN)   # % -> voltios
-    return pct, v
+    if PIN_VOLTAJE:
+        try:
+            lectura = mbot2.read_analog(PIN_VOLTAJE)          # 0..100
+            v_pin = lectura / ADC_MAX * ADC_VREF              # voltios en el pin
+            return pct, v_pin * (DIV_R1 + DIV_R2) / DIV_R2    # deshacer el divisor
+        except:
+            pass
+    return pct, V_MIN + (pct / 100) * (V_MAX - V_MIN)
 
 
 # --- Encoder: resolver la función y su forma de llamada UNA sola vez ---
