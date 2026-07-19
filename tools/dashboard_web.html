@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MARS-ROBOT · Panel en vivo</title>
+<style>
+  :root {
+    color-scheme: light;
+    --pagina: #f9f9f7;
+    --superficie: #fcfcfb;
+    --tinta: #0b0b0b;
+    --tinta-2: #52514e;
+    --tinta-suave: #898781;
+    --reja: #e1e0d9;
+    --eje: #c3c2b7;
+    --borde: rgba(11,11,11,.10);
+    --s1: #2a78d6;   /* serie 1 (azul) */
+    --s2: #008300;   /* serie 2 (verde) */
+    --ok: #0ca30c;
+    --aviso: #fab219;
+    --serio: #ec835a;
+    --critico: #d03b3b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --pagina: #0d0d0d;
+      --superficie: #1a1a19;
+      --tinta: #ffffff;
+      --tinta-2: #c3c2b7;
+      --tinta-suave: #898781;
+      --reja: #2c2c2a;
+      --eje: #383835;
+      --borde: rgba(255,255,255,.10);
+      --s1: #3987e5;
+      --s2: #008300;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    background: var(--pagina);
+    color: var(--tinta);
+    font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+    padding: 20px clamp(12px, 3vw, 32px) 40px;
+  }
+  header {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px;
+    margin-bottom: 18px;
+  }
+  h1 { font-size: 18px; font-weight: 650; letter-spacing: .2px; }
+  .conexion { display: inline-flex; align-items: center; gap: 7px; color: var(--tinta-2); }
+  .punto { width: 8px; height: 8px; border-radius: 50%; background: var(--tinta-suave); }
+  .punto.vivo { background: var(--ok); }
+  .punto.error { background: var(--critico); }
+  .meta { color: var(--tinta-suave); font-size: 12.5px; margin-left: auto; }
+
+  .kpis {
+    display: grid; gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    margin-bottom: 14px;
+  }
+  .tile {
+    background: var(--superficie); border: 1px solid var(--borde);
+    border-radius: 12px; padding: 12px 14px 10px;
+  }
+  .tile-l { font-size: 12px; color: var(--tinta-2); }
+  .tile-v { font-size: 27px; font-weight: 600; margin: 2px 0 0; }
+  .tile-v small { font-size: 14px; font-weight: 500; color: var(--tinta-2); }
+  .tile-s { font-size: 12px; color: var(--tinta-suave); margin-top: 1px; }
+  .tile-s .icono { font-weight: 700; }
+
+  .filtros { display: flex; align-items: center; gap: 8px; margin: 4px 0 12px; }
+  .filtros span { font-size: 12.5px; color: var(--tinta-2); }
+  .filtros button {
+    font: inherit; font-size: 12.5px; color: var(--tinta-2);
+    background: var(--superficie); border: 1px solid var(--borde);
+    border-radius: 8px; padding: 4px 12px; cursor: pointer;
+  }
+  .filtros button[aria-pressed="true"] {
+    color: var(--tinta); border-color: var(--tinta-2); font-weight: 600;
+  }
+
+  .grid {
+    display: grid; gap: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+  }
+  .card {
+    background: var(--superficie); border: 1px solid var(--borde);
+    border-radius: 12px; padding: 14px 14px 8px; position: relative;
+  }
+  .card h2 { font-size: 13.5px; font-weight: 600; display: flex; align-items: baseline; gap: 8px; }
+  .card h2 .unidad { font-weight: 400; font-size: 12px; color: var(--tinta-suave); }
+  .leyenda { margin-left: auto; display: flex; gap: 14px; font-size: 12px; color: var(--tinta-2); font-weight: 400; }
+  .leyenda i {
+    display: inline-block; width: 14px; height: 0; border-top: 2px solid;
+    border-radius: 2px; vertical-align: middle; margin-right: 5px;
+  }
+  .leyenda .cuadro {
+    display: inline-block; width: 10px; height: 10px; border-radius: 3px;
+    vertical-align: -1px; margin-right: 5px;
+  }
+  .plot { position: relative; outline: none; }
+  .plot:focus-visible { box-shadow: 0 0 0 2px var(--s1); border-radius: 6px; }
+  .plot svg { display: block; width: 100%; }
+
+  .tt {
+    position: absolute; pointer-events: none; display: none; z-index: 5;
+    background: var(--superficie); border: 1px solid var(--borde);
+    border-radius: 8px; padding: 7px 10px; font-size: 12px;
+    box-shadow: 0 4px 14px rgba(0,0,0,.12); min-width: 110px;
+  }
+  .tt-t { color: var(--tinta-suave); margin-bottom: 3px; }
+  .tt-fila { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .tt-clave { width: 12px; height: 0; border-top: 2px solid; border-radius: 2px; flex: none; }
+  .tt-fila strong { font-weight: 650; }
+  .tt-fila span.nom { color: var(--tinta-2); }
+
+  .btn {
+    font: inherit; cursor: pointer; border-radius: 10px;
+    border: 1px solid var(--borde); padding: 6px 16px;
+    background: var(--superficie); color: var(--tinta);
+  }
+  .btn-primario {
+    background: var(--s1); border-color: var(--s1); color: #fff;
+    font-weight: 600; font-size: 15px; padding: 10px 26px;
+  }
+  .btn-primario:hover { filter: brightness(1.08); }
+
+  #overlay {
+    position: fixed; inset: 0; z-index: 20;
+    background: rgba(0,0,0,.38);
+    display: flex; align-items: center; justify-content: center;
+  }
+  #overlay[hidden] { display: none; }
+  .ov-panel {
+    background: var(--superficie); border: 1px solid var(--borde);
+    border-radius: 16px; padding: 30px 34px; text-align: center;
+    max-width: 380px; box-shadow: 0 10px 40px rgba(0,0,0,.25);
+  }
+  .ov-icono { font-size: 34px; margin-bottom: 10px; }
+  .ov-titulo { font-size: 17px; font-weight: 650; margin-bottom: 6px; }
+  .ov-msg { font-size: 13.5px; color: var(--tinta-2); margin-bottom: 18px; line-height: 1.5; }
+  .ov-msg strong { color: var(--tinta); }
+  .pulso {
+    display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+    background: var(--ok); margin-right: 8px; vertical-align: 1px;
+    animation: pulso 1.2s ease-in-out infinite;
+  }
+  @keyframes pulso { 0%,100% { opacity: 1 } 50% { opacity: .25 } }
+
+  details.tabla { margin-top: 18px; }
+  details.tabla summary { cursor: pointer; color: var(--tinta-2); font-size: 13px; }
+  table { border-collapse: collapse; margin-top: 10px; width: 100%; background: var(--superficie);
+          border: 1px solid var(--borde); border-radius: 12px; overflow: hidden; font-size: 12.5px; }
+  th, td { padding: 5px 10px; text-align: right; font-variant-numeric: tabular-nums; }
+  th { color: var(--tinta-2); font-weight: 600; border-bottom: 1px solid var(--reja); }
+  tr + tr td { border-top: 1px solid var(--reja); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>MARS-ROBOT</h1>
+  <span class="conexion"><span class="punto" id="punto"></span><span id="conexion-txt">conectando…</span></span>
+  <span class="meta" id="meta-txt"></span>
+  <button class="btn" id="btn-header" hidden></button>
+</header>
+
+<div id="overlay" hidden>
+  <div class="ov-panel">
+    <div class="ov-icono" id="ov-icono">🛰️</div>
+    <div class="ov-titulo" id="ov-titulo"></div>
+    <div class="ov-msg" id="ov-msg"></div>
+    <button class="btn btn-primario" id="ov-btn" hidden></button>
+  </div>
+</div>
+
+<section class="kpis">
+  <div class="tile"><div class="tile-l">Tiempo de captura</div><div class="tile-v" id="k-tiempo">–</div><div class="tile-s" id="k-muestras"></div></div>
+  <div class="tile"><div class="tile-l">Batería</div><div class="tile-v" id="k-bateria">–</div><div class="tile-s" id="k-volt"></div></div>
+  <div class="tile"><div class="tile-l">Velocidad</div><div class="tile-v" id="k-vel">–</div><div class="tile-s" id="k-fuente"></div></div>
+  <div class="tile"><div class="tile-l">Distancia</div><div class="tile-v" id="k-dist">–</div><div class="tile-s" id="k-ofs"></div></div>
+  <div class="tile"><div class="tile-l">Inclinación (pitch)</div><div class="tile-v" id="k-pitch">–</div><div class="tile-s" id="k-roll"></div></div>
+  <div class="tile"><div class="tile-l">Sensor de línea</div><div class="tile-v" id="k-linea">–</div><div class="tile-s" id="k-estado"></div></div>
+</section>
+
+<div class="filtros" id="filtros">
+  <span>Ventana</span>
+  <button data-v="30">30 s</button>
+  <button data-v="60" aria-pressed="true">60 s</button>
+  <button data-v="120">2 min</button>
+  <button data-v="todo">Todo</button>
+</div>
+
+<section class="grid">
+  <div class="card">
+    <h2>Velocidad <span class="unidad">RPM</span>
+      <span class="leyenda"><span><i style="border-color:var(--s1)"></i>Izquierda</span><span><i style="border-color:var(--s2)"></i>Derecha</span></span>
+    </h2>
+    <div class="plot" id="ch-vel" tabindex="0"></div>
+  </div>
+  <div class="card">
+    <h2>Inclinación <span class="unidad">grados</span>
+      <span class="leyenda"><span><i style="border-color:var(--s1)"></i>Roll</span><span><i style="border-color:var(--s2)"></i>Pitch</span></span>
+    </h2>
+    <div class="plot" id="ch-inc" tabindex="0"></div>
+  </div>
+  <div class="card">
+    <h2>Voltaje estimado <span class="unidad">V</span></h2>
+    <div class="plot" id="ch-volt" tabindex="0"></div>
+  </div>
+  <div class="card">
+    <h2>Seguimiento de línea
+      <span class="leyenda" id="ley-linea"></span>
+    </h2>
+    <div class="plot" id="ch-linea" tabindex="0"></div>
+  </div>
+</section>
+
+<details class="tabla">
+  <summary>Tabla de datos (últimas 20 muestras)</summary>
+  <div style="overflow-x:auto"><table id="tabla"></table></div>
+</details>
+
+<script>
+"use strict";
+const SVG = "http://www.w3.org/2000/svg";
+const IDX = {T:0, PCT:1, V:2, ROLL:3, PITCH:4, YAW:5, AX:6, AY:7, AZ:8, RPM:9, REAL:10, EST:11,
+             VEL2:12, DIST:13, GX:14, GY:15, GZ:16, OFS:17, PCT2:18, LUZ:19};
+const COLS = ["t_s","bat %","volt V","roll","pitch","yaw","acc_x","acc_y","acc_z","RPM izq","enc","estado",
+              "RPM der","dist cm","giro x","giro y","giro z","ofs línea","bat2 %","luz"];
+const COLS_ENTERAS = new Set([IDX.PCT, IDX.REAL, IDX.EST, IDX.OFS, IDX.PCT2, IDX.LUZ]);
+const COLS_2DEC = new Set([IDX.V, IDX.AX, IDX.AY, IDX.AZ]);
+
+// Grupos del estado del sensor (ver README §4) — semántica de estatus
+const GRUPOS = [
+  { nombre: "centrado",          icono: "✓", css: "--ok" },
+  { nombre: "corrección suave",  icono: "~", css: "--aviso" },
+  { nombre: "corrección fuerte", icono: "!", css: "--serio" },
+  { nombre: "línea perdida",     icono: "✕", css: "--critico" },
+];
+function grupoEstado(e) {
+  if (e === 6) return 0;
+  if ([14, 12, 4, 7, 3, 2].includes(e)) return 1;
+  if (e === 8 || e === 1) return 2;
+  return 3;
+}
+
+let filas = [], captura = -1, fin = false, meta = {};
+let ventana = 60;          // segundos visibles ("todo" = toda la captura)
+let conectado = null;
+let servidor = "inactivo"; // estado del lector en dashboard.py
+let mensaje = "";
+
+const $ = id => document.getElementById(id);
+const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const el = (tag, attrs) => {
+  const e = document.createElementNS(SVG, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  return e;
+};
+
+// ---------- escalas y ticks ----------
+function ticks(min, max, n) {
+  const span = max - min || 1;
+  const paso0 = span / n;
+  const mag = Math.pow(10, Math.floor(Math.log10(paso0)));
+  const paso = [1, 2, 2.5, 5, 10].map(m => m * mag).find(p => span / p <= n) || mag * 10;
+  const out = [];
+  for (let v = Math.ceil(min / paso) * paso; v <= max + 1e-9; v += paso)
+    out.push(Math.round(v * 1000) / 1000);
+  return out;
+}
+
+// ---------- gráfico de líneas ----------
+function graficoLinea(cont, cfg) {
+  // cfg: { series: [{nombre, colorVar, idx, fmt}], dominioY(datos) -> [min,max], alto }
+  const tt = document.createElement("div");
+  tt.className = "tt";
+  cont.parentElement.appendChild(tt);
+  let datosVis = [], escala = null, idxHover = -1;
+
+  function dibujar(vis, x0, x1) {
+    datosVis = vis;
+    const w = cont.clientWidth || 320;
+    const alto = cfg.alto || 190;
+    const m = { izq: 42, der: 14, arr: 10, aba: 24 };
+    const pw = w - m.izq - m.der, ph = alto - m.arr - m.aba;
+    const [y0, y1] = cfg.dominioY(vis);
+    const X = t => m.izq + (x1 === x0 ? 0 : (t - x0) / (x1 - x0) * pw);
+    const Y = v => m.arr + (y1 === y0 ? ph / 2 : (y1 - v) / (y1 - y0) * ph);
+    escala = { X, Y, x0, x1, m, pw, ph, alto };
+
+    const svg = el("svg", { viewBox: `0 0 ${w} ${alto}`, width: w, height: alto });
+
+    // rejilla horizontal + etiquetas Y (hairline, recesiva)
+    for (const v of ticks(y0, y1, 4)) {
+      const esCero = Math.abs(v) < 1e-9 && y0 < 0;
+      svg.appendChild(el("line", { x1: m.izq, x2: w - m.der, y1: Y(v), y2: Y(v),
+        stroke: esCero ? cssVar("--eje") : cssVar("--reja"), "stroke-width": 1 }));
+      const et = el("text", { x: m.izq - 7, y: Y(v) + 3.5, "text-anchor": "end",
+        fill: cssVar("--tinta-suave"), "font-size": 11 });
+      et.textContent = cfg.fmtY ? cfg.fmtY(v) : v;
+      svg.appendChild(et);
+    }
+    // eje base + etiquetas X (segundos)
+    svg.appendChild(el("line", { x1: m.izq, x2: w - m.der, y1: m.arr + ph, y2: m.arr + ph,
+      stroke: cssVar("--eje"), "stroke-width": 1 }));
+    for (const t of ticks(x0, x1, 5)) {
+      const et = el("text", { x: X(t), y: alto - 7, "text-anchor": "middle",
+        fill: cssVar("--tinta-suave"), "font-size": 11 });
+      et.textContent = t + " s";
+      svg.appendChild(et);
+    }
+
+    // series: línea 2px + marcador final con anillo de superficie
+    // (los valores null —capturas viejas sin esa columna— cortan el trazo)
+    const paso = Math.max(1, Math.floor(vis.length / pw));
+    for (const s of cfg.series) {
+      const color = cssVar(s.colorVar);
+      let d = "", enTrazo = false;
+      for (let i = 0; i < vis.length; i += paso) {
+        const f = vis[i], v = f[s.idx];
+        if (v == null) { enTrazo = false; continue; }
+        d += (enTrazo ? "L" : "M") + X(f[IDX.T]).toFixed(1) + " " + Y(v).toFixed(1);
+        enTrazo = true;
+      }
+      let ult = null;
+      for (let i = vis.length - 1; i >= 0; i--)
+        if (vis[i][s.idx] != null) { ult = vis[i]; break; }
+      if (ult && enTrazo && paso > 1)
+        d += "L" + X(ult[IDX.T]).toFixed(1) + " " + Y(ult[s.idx]).toFixed(1);
+      if (d) svg.appendChild(el("path", { d, fill: "none", stroke: color,
+        "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }));
+      if (ult) svg.appendChild(el("circle", { cx: X(ult[IDX.T]), cy: Y(ult[s.idx]), r: 4,
+        fill: color, stroke: cssVar("--superficie"), "stroke-width": 2 }));
+    }
+
+    // cruz vertical (se mueve con el puntero)
+    svg.appendChild(el("line", { id: "cruz", x1: 0, x2: 0, y1: m.arr, y2: m.arr + ph,
+      stroke: cssVar("--eje"), "stroke-width": 1, visibility: "hidden" }));
+
+    cont.replaceChildren(svg);
+    if (idxHover >= 0) mostrarTT(Math.min(idxHover, vis.length - 1));
+  }
+
+  function mostrarTT(i) {
+    if (i < 0 || i >= datosVis.length || !escala) { ocultar(); return; }
+    idxHover = i;
+    const f = datosVis[i];
+    const cruz = cont.querySelector("#cruz");
+    if (cruz) { cruz.setAttribute("x1", escala.X(f[IDX.T])); cruz.setAttribute("x2", escala.X(f[IDX.T]));
+                cruz.setAttribute("visibility", "visible"); }
+    tt.replaceChildren();
+    const tEl = document.createElement("div");
+    tEl.className = "tt-t"; tEl.textContent = f[IDX.T].toFixed(1) + " s";
+    tt.appendChild(tEl);
+    for (const s of cfg.series) {
+      const fila = document.createElement("div"); fila.className = "tt-fila";
+      const clave = document.createElement("i"); clave.className = "tt-clave";
+      clave.style.borderColor = cssVar(s.colorVar);
+      const val = document.createElement("strong");
+      val.textContent = f[s.idx] == null ? "–" : (s.fmt || (v => v))(f[s.idx]);
+      const nom = document.createElement("span"); nom.className = "nom"; nom.textContent = s.nombre;
+      fila.append(clave, val, nom);
+      tt.appendChild(fila);
+    }
+    tt.style.display = "block";
+    const px = escala.X(f[IDX.T]);
+    const enDerecha = px > (cont.clientWidth * 0.6);
+    tt.style.left = enDerecha ? "" : (px + 14) + "px";
+    tt.style.right = enDerecha ? (cont.clientWidth - px + 14) + "px" : "";
+    tt.style.top = "34px";
+  }
+  function ocultar() {
+    idxHover = -1; tt.style.display = "none";
+    const cruz = cont.querySelector("#cruz");
+    if (cruz) cruz.setAttribute("visibility", "hidden");
+  }
+  function idxCercano(evX) {
+    if (!escala || !datosVis.length) return -1;
+    const rect = cont.getBoundingClientRect();
+    const t = escala.x0 + (evX - rect.left - escala.m.izq) / escala.pw * (escala.x1 - escala.x0);
+    let mejor = 0, dMin = Infinity;
+    for (let i = 0; i < datosVis.length; i++) {
+      const d = Math.abs(datosVis[i][IDX.T] - t);
+      if (d < dMin) { dMin = d; mejor = i; }
+    }
+    return mejor;
+  }
+  cont.addEventListener("pointermove", e => mostrarTT(idxCercano(e.clientX)));
+  cont.addEventListener("pointerleave", ocultar);
+  cont.addEventListener("keydown", e => {   // mismo detalle con teclado que con hover
+    if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+      e.preventDefault();
+      const base = idxHover >= 0 ? idxHover : datosVis.length - 1;
+      mostrarTT(Math.max(0, Math.min(datosVis.length - 1, base + (e.key === "ArrowRight" ? 1 : -1))));
+    }
+    if (e.key === "Escape") ocultar();
+  });
+  cont.addEventListener("blur", ocultar);
+  return { dibujar };
+}
+
+// ---------- franja de estado del sensor de línea ----------
+function graficoFranja(cont) {
+  const tt = document.createElement("div");
+  tt.className = "tt";
+  cont.parentElement.appendChild(tt);
+  let datosVis = [], escala = null;
+
+  function dibujar(vis, x0, x1) {
+    datosVis = vis;
+    const w = cont.clientWidth || 320;
+    const alto = 88;
+    const m = { izq: 42, der: 14, arr: 14, aba: 24 };
+    const pw = w - m.izq - m.der, ph = alto - m.arr - m.aba;
+    const X = t => m.izq + (x1 === x0 ? 0 : (t - x0) / (x1 - x0) * pw);
+    escala = { X, x0, x1, m, pw };
+    const svg = el("svg", { viewBox: `0 0 ${w} ${alto}`, width: w, height: alto });
+
+    // segmentos contiguos del mismo grupo, como banda coloreada
+    let i = 0;
+    while (i < vis.length) {
+      const g = grupoEstado(vis[i][IDX.EST]);
+      let j = i;
+      while (j + 1 < vis.length && grupoEstado(vis[j + 1][IDX.EST]) === g) j++;
+      const xA = X(Math.max(x0, vis[i][IDX.T] - 0.15));
+      const xB = X(vis[j][IDX.T] + 0.15);
+      svg.appendChild(el("rect", { x: xA, y: m.arr, width: Math.max(1, xB - xA), height: ph,
+        rx: 3, fill: cssVar(GRUPOS[g].css) }));
+      i = j + 1;
+    }
+    svg.appendChild(el("line", { x1: m.izq, x2: w - m.der, y1: m.arr + ph, y2: m.arr + ph,
+      stroke: cssVar("--eje"), "stroke-width": 1 }));
+    for (const t of ticks(x0, x1, 5)) {
+      const et = el("text", { x: X(t), y: alto - 7, "text-anchor": "middle",
+        fill: cssVar("--tinta-suave"), "font-size": 11 });
+      et.textContent = t + " s";
+      svg.appendChild(et);
+    }
+    cont.replaceChildren(svg);
+  }
+  function mostrar(i) {
+    if (i < 0 || i >= datosVis.length) { tt.style.display = "none"; return; }
+    const f = datosVis[i], g = GRUPOS[grupoEstado(f[IDX.EST])];
+    tt.replaceChildren();
+    const tEl = document.createElement("div"); tEl.className = "tt-t";
+    tEl.textContent = f[IDX.T].toFixed(1) + " s · estado " + f[IDX.EST];
+    const fila = document.createElement("div"); fila.className = "tt-fila";
+    const val = document.createElement("strong");
+    val.textContent = g.icono + " " + g.nombre;
+    fila.appendChild(val);
+    tt.append(tEl, fila);
+    tt.style.display = "block";
+    const px = escala.X(f[IDX.T]);
+    const enDerecha = px > (cont.clientWidth * 0.6);
+    tt.style.left = enDerecha ? "" : (px + 14) + "px";
+    tt.style.right = enDerecha ? (cont.clientWidth - px + 14) + "px" : "";
+    tt.style.top = "8px";
+  }
+  cont.addEventListener("pointermove", e => {
+    if (!escala || !datosVis.length) return;
+    const rect = cont.getBoundingClientRect();
+    const t = escala.x0 + (e.clientX - rect.left - escala.m.izq) / escala.pw * (escala.x1 - escala.x0);
+    let mejor = 0, dMin = Infinity;
+    for (let i = 0; i < datosVis.length; i++) {
+      const d = Math.abs(datosVis[i][IDX.T] - t);
+      if (d < dMin) { dMin = d; mejor = i; }
+    }
+    mostrar(mejor);
+  });
+  cont.addEventListener("pointerleave", () => tt.style.display = "none");
+  return { dibujar };
+}
+
+// ---------- instancias ----------
+const fmt1 = v => v.toFixed(1);
+const noNulos = (d, ...idxs) => {
+  const vs = [];
+  for (const f of d) for (const i of idxs) if (f[i] != null) vs.push(f[i]);
+  return vs;
+};
+const chVel = graficoLinea($("ch-vel"), {
+  series: [
+    { nombre: "izquierda", colorVar: "--s1", idx: IDX.RPM, fmt: fmt1 },
+    { nombre: "derecha", colorVar: "--s2", idx: IDX.VEL2, fmt: fmt1 },
+  ],
+  dominioY: d => [0, Math.max(30, ...noNulos(d, IDX.RPM, IDX.VEL2)) * 1.15],
+});
+const chInc = graficoLinea($("ch-inc"), {
+  series: [
+    { nombre: "roll", colorVar: "--s1", idx: IDX.ROLL, fmt: v => fmt1(v) + "°" },
+    { nombre: "pitch", colorVar: "--s2", idx: IDX.PITCH, fmt: v => fmt1(v) + "°" },
+  ],
+  dominioY: d => {
+    const m = Math.max(10, ...noNulos(d, IDX.ROLL, IDX.PITCH).map(Math.abs)) * 1.2;
+    return [-m, m];
+  },
+});
+const chVolt = graficoLinea($("ch-volt"), {
+  series: [{ nombre: "voltaje", colorVar: "--s1", idx: IDX.V, fmt: v => v.toFixed(2) + " V" }],
+  dominioY: d => [
+    Math.min(3.3, ...noNulos(d, IDX.V)) - 0.02,
+    Math.max(4.2, ...noNulos(d, IDX.V)) + 0.02,
+  ],
+  fmtY: v => v.toFixed(1),
+});
+const chLinea = graficoFranja($("ch-linea"));
+
+// leyenda de la franja (icono + etiqueta: el color nunca va solo)
+for (const g of GRUPOS) {
+  const s = document.createElement("span");
+  const c = document.createElement("i"); c.className = "cuadro";
+  c.style.background = `var(${g.css})`; c.style.borderTop = "none";
+  s.append(c, document.createTextNode(g.icono + " " + g.nombre));
+  $("ley-linea").appendChild(s);
+}
+
+// ---------- render general ----------
+function render() {
+  const n = filas.length;
+  if (!n) return;
+  const ult = filas[n - 1];
+  const t = ult[IDX.T];
+
+  $("k-tiempo").textContent = t.toFixed(1) + " s";
+  $("k-muestras").textContent = n + " muestras · " + (t > 0 ? (n / t).toFixed(1) : "–") + "/s";
+  $("k-bateria").textContent = ult[IDX.PCT].toFixed(0) + " %";
+  $("k-volt").textContent = ult[IDX.V].toFixed(2) + " V estimados";
+  $("k-vel").textContent = ult[IDX.RPM].toFixed(1) + " RPM";
+  $("k-fuente").textContent = (ult[IDX.REAL] ? "✓ encoder" : "comandada (sin encoder)") +
+    (ult[IDX.VEL2] != null ? " · der " + ult[IDX.VEL2].toFixed(1) : "");
+  if (ult[IDX.DIST] != null) {
+    $("k-dist").textContent = ult[IDX.DIST] >= 100 ?
+      (ult[IDX.DIST] / 100).toFixed(2) + " m" : ult[IDX.DIST].toFixed(0) + " cm";
+    $("k-ofs").textContent = ult[IDX.OFS] != null ? "desv. línea " + ult[IDX.OFS] : "";
+  } else {
+    $("k-dist").textContent = "–";
+    $("k-ofs").textContent = "sin encoder / captura vieja";
+  }
+  $("k-pitch").textContent = ult[IDX.PITCH].toFixed(1) + "°";
+  $("k-roll").textContent = "roll " + ult[IDX.ROLL].toFixed(1) + "° · yaw " + ult[IDX.YAW].toFixed(0) + "°";
+  const g = GRUPOS[grupoEstado(ult[IDX.EST])];
+  $("k-linea").textContent = g.icono + " " + g.nombre;
+  $("k-estado").textContent = "estado crudo " + ult[IDX.EST];
+
+  // ventana temporal (escala común para los 4 gráficos)
+  const x1 = Math.max(t, 10);
+  const x0 = ventana === "todo" ? 0 : Math.max(0, x1 - ventana);
+  const vis = filas.filter(f => f[IDX.T] >= x0);
+
+  chVel.dibujar(vis, x0, x1);
+  chInc.dibujar(vis, x0, x1);
+  chVolt.dibujar(vis, x0, x1);
+  chLinea.dibujar(vis, x0, x1);
+
+  // tabla (últimas 20)
+  const tabla = $("tabla");
+  tabla.replaceChildren();
+  const trh = document.createElement("tr");
+  for (const c of COLS) { const th = document.createElement("th"); th.textContent = c; trh.appendChild(th); }
+  tabla.appendChild(trh);
+  for (const f of filas.slice(-20)) {
+    const tr = document.createElement("tr");
+    f.forEach((v, i) => {
+      const td = document.createElement("td");
+      td.textContent = v == null ? "–" :
+                       COLS_ENTERAS.has(i) ? v.toFixed(0) :
+                       COLS_2DEC.has(i) ? v.toFixed(2) : v.toFixed(1);
+      tr.appendChild(td);
+    });
+    tabla.appendChild(tr);
+  }
+}
+
+// ---------- estado general: overlay + cabecera + botones ----------
+function overlay(icono, titulo, msjHTMLseguro, boton) {
+  $("overlay").hidden = false;
+  $("ov-icono").textContent = icono;
+  $("ov-titulo").textContent = titulo;
+  $("ov-msg").replaceChildren(...msjHTMLseguro);
+  const b = $("ov-btn");
+  if (boton) { b.hidden = false; b.textContent = boton.texto; b.onclick = boton.accion; }
+  else b.hidden = true;
+}
+const txt = t => document.createTextNode(t);
+const fuerte = t => { const s = document.createElement("strong"); s.textContent = t; return s; };
+
+async function iniciar() {
+  $("ov-btn").disabled = true;
+  try { await fetch("/iniciar", { method: "POST" }); } catch (e) {}
+  $("ov-btn").disabled = false;
+}
+async function detener() {
+  try { await fetch("/detener", { method: "POST" }); } catch (e) {}
+}
+
+function pintarConexion() {
+  const punto = $("punto"), ctxt = $("conexion-txt"), btnH = $("btn-header");
+  punto.className = "punto";
+  btnH.hidden = true;
+
+  if (conectado === false) {
+    punto.classList.add("error");
+    ctxt.textContent = "sin conexión con dashboard.py";
+    overlay("🔌", "Sin conexión",
+      [txt("No se pudo hablar con "), fuerte("dashboard.py"), txt(". ¿Sigue corriendo en la Terminal?")]);
+    return;
+  }
+
+  // botón de la cabecera: Detener mientras escucha, Iniciar cuando está inactivo con datos
+  if (servidor === "escuchando") {
+    btnH.hidden = false; btnH.textContent = "■ Detener"; btnH.onclick = detener;
+  } else if ((servidor === "inactivo" || servidor === "error") && filas.length) {
+    btnH.hidden = false; btnH.textContent = "▶ Iniciar otra captura"; btnH.onclick = iniciar;
+  }
+
+  if (filas.length) {
+    // ya hay datos: el panel manda; overlay fuera
+    $("overlay").hidden = true;
+    if (servidor === "escuchando" && !fin) {
+      punto.classList.add("vivo");
+      ctxt.textContent = "capturando en vivo · " + filas.length + " muestras";
+    } else if (fin) {
+      ctxt.textContent = "captura finalizada · " + filas.length + " muestras" +
+        (mensaje ? " · " + mensaje : "");
+    } else {
+      ctxt.textContent = mensaje || ("captura detenida · " + filas.length + " muestras");
+    }
+    return;
+  }
+
+  // sin datos todavía: el overlay guía el flujo
+  if (servidor === "inactivo") {
+    ctxt.textContent = "listo";
+    overlay("🛰️", "Panel listo",
+      [txt("Pulsa "), fuerte("Iniciar captura"), txt(" para conectar con el carrito por USB (igual que correr el script en la Terminal).")],
+      { texto: "▶ Iniciar captura", accion: iniciar });
+  } else if (servidor === "conectando") {
+    ctxt.textContent = "conectando…";
+    overlay("⏳", "Conectando…", [txt("Abriendo el puerto USB del robot…")]);
+  } else if (servidor === "error") {
+    punto.classList.add("error");
+    ctxt.textContent = "error de conexión";
+    overlay("⚠️", "No se pudo conectar", [txt(mensaje || "Error desconocido.")],
+      { texto: "Reintentar", accion: iniciar });
+  } else if (servidor === "escuchando") {
+    punto.classList.add("vivo");
+    ctxt.textContent = "conectado · esperando al carrito";
+    const detalle = meta.modo === "usb" ? "Conectado a " + (meta.puerto || "USB") + ". " : "";
+    const m = [document.createElement("span")];
+    m[0].className = "pulso";
+    m.push(txt(detalle + "Ahora pulsa el botón "), fuerte("A"),
+           txt(" en el carrito para empezar a captar datos."));
+    if (meta.modo !== "usb") m.push(txt(" (" + (mensaje || "modo de prueba") + ")"));
+    overlay("✅", "Conectado", m);
+  }
+}
+
+// ---------- sondeo del servidor ----------
+async function sondear() {
+  try {
+    const r = await fetch(`/datos?desde=${filas.length}&captura=${captura}`);
+    const j = await r.json();
+    if (j.captura !== captura) { captura = j.captura; filas = []; }
+    if (j.desde === 0) filas = [];
+    filas.push(...j.filas);
+    fin = j.fin; meta = j.meta;
+    servidor = j.estado; mensaje = j.mensaje;
+    $("meta-txt").textContent = meta.modo ?
+      (meta.modo === "usb" ? "USB " + meta.puerto + " → " + meta.archivo : meta.archivo) : "";
+    conectado = true;
+    if (j.filas.length || fin) render();
+    pintarConexion();
+  } catch (e) {
+    conectado = false;
+    pintarConexion();
+  } finally {
+    setTimeout(sondear, 400);
+  }
+}
+
+// ---------- filtros de ventana ----------
+$("filtros").addEventListener("click", e => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  for (const o of $("filtros").querySelectorAll("button")) o.setAttribute("aria-pressed", "false");
+  b.setAttribute("aria-pressed", "true");
+  ventana = b.dataset.v === "todo" ? "todo" : Number(b.dataset.v);
+  render();
+});
+
+// re-dibujar al cambiar tamaño o tema
+let timerResize = null;
+addEventListener("resize", () => { clearTimeout(timerResize); timerResize = setTimeout(render, 150); });
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => setTimeout(render, 50));
+
+sondear();
+</script>
+</body>
+</html>
