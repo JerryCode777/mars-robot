@@ -311,6 +311,20 @@ class Manejador(BaseHTTPRequestHandler):
             desde = int(q.get("desde", ["0"])[0])
             captura = int(q.get("captura", ["-1"])[0])
             self._json(self.datos.snapshot(desde, captura))
+        elif u.path == "/csv":
+            with self.datos.lock:
+                filas = list(self.datos.filas)
+            lineas = [CABECERA]
+            for f in filas:
+                lineas.append(",".join("" if v is None else "{:g}".format(v) for v in f))
+            cuerpo = ("\n".join(lineas) + "\n").encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/csv; charset=utf-8")
+            self.send_header("Content-Disposition",
+                             'attachment; filename="mars-robot-sesion.csv"')
+            self.send_header("Content-Length", str(len(cuerpo)))
+            self.end_headers()
+            self.wfile.write(cuerpo)
         else:
             self.send_error(404)
 

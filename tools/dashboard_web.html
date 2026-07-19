@@ -42,67 +42,120 @@
     background: var(--pagina);
     color: var(--tinta);
     font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
-    padding: 20px clamp(12px, 3vw, 32px) 40px;
+    min-height: 100vh; display: flex; flex-direction: column;
   }
-  header {
-    display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px;
-    margin-bottom: 18px;
+
+  /* ---------- barra de navegación ---------- */
+  .topnav {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; align-items: center; gap: 4px;
+    padding: 10px clamp(14px, 3vw, 36px);
+    background: color-mix(in srgb, var(--pagina) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--borde);
   }
-  h1 { font-size: 18px; font-weight: 650; letter-spacing: .2px; }
-  .conexion { display: inline-flex; align-items: center; gap: 7px; color: var(--tinta-2); }
-  .punto { width: 8px; height: 8px; border-radius: 50%; background: var(--tinta-suave); }
+  .marca { font-size: 15px; font-weight: 700; letter-spacing: .3px; margin-right: 18px; }
+  .topnav a {
+    color: var(--tinta-2); text-decoration: none; font-size: 13.5px;
+    padding: 6px 12px; border-radius: 8px;
+  }
+  .topnav a:hover { color: var(--tinta); }
+  .topnav a.activo { color: var(--tinta); font-weight: 600; background: var(--superficie);
+                     border: 1px solid var(--borde); }
+  .nav-der { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .conexion { display: inline-flex; align-items: center; gap: 7px; color: var(--tinta-2); font-size: 12.5px; }
+  .punto { width: 8px; height: 8px; border-radius: 50%; background: var(--tinta-suave); flex: none; }
   .punto.vivo { background: var(--ok); }
   .punto.error { background: var(--critico); }
-  .meta { color: var(--tinta-suave); font-size: 12.5px; margin-left: auto; }
+  .meta { color: var(--tinta-suave); font-size: 12px; }
+  @media (max-width: 760px) { .meta { display: none; } }
 
-  .kpis {
-    display: grid; gap: 12px;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    margin-bottom: 14px;
+  main { flex: 1; width: 100%; max-width: 1500px; margin: 0 auto;
+         padding: 22px clamp(14px, 3vw, 36px) 40px; }
+  section[hidden] { display: none; }
+
+  /* ---------- botones ---------- */
+  .btn {
+    font: inherit; cursor: pointer; border-radius: 10px;
+    border: 1px solid var(--borde); padding: 6px 16px;
+    background: var(--superficie); color: var(--tinta);
   }
-  .tile {
-    background: var(--superficie); border: 1px solid var(--borde);
-    border-radius: 12px; padding: 12px 14px 10px;
+  .btn-primario {
+    background: var(--s1); border-color: var(--s1); color: #fff;
+    font-weight: 600; font-size: 15px; padding: 10px 26px;
   }
+  .btn-primario:hover { filter: brightness(1.08); }
+
+  /* ---------- INICIO ---------- */
+  .hero { padding: 48px 0 20px; max-width: 860px; }
+  .hero .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+  .chip {
+    font-size: 12px; color: var(--tinta-2); background: var(--superficie);
+    border: 1px solid var(--borde); border-radius: 99px; padding: 3px 12px;
+  }
+  .hero h1 { font-size: clamp(34px, 5vw, 52px); font-weight: 750; letter-spacing: -.5px; line-height: 1.05; }
+  .hero h1 em { font-style: normal; color: var(--s1); }
+  .hero p.baja { font-size: 16.5px; color: var(--tinta-2); margin: 16px 0 26px; max-width: 640px; }
+  .hero .acciones { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .estado-vivo { font-size: 13px; color: var(--tinta-2); }
+
+  .rasgos { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            margin: 34px 0 8px; }
+  .rasgo { background: var(--superficie); border: 1px solid var(--borde); border-radius: 14px;
+           padding: 18px; }
+  .rasgo .ico { font-size: 22px; margin-bottom: 8px; }
+  .rasgo h3 { font-size: 14.5px; margin-bottom: 5px; }
+  .rasgo p { font-size: 13px; color: var(--tinta-2); }
+
+  .pasos { margin-top: 34px; }
+  .pasos h2, .sec-titulo { font-size: 18px; font-weight: 650; margin-bottom: 14px; }
+  .pasos ol { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+              list-style: none; counter-reset: paso; }
+  .pasos li { background: var(--superficie); border: 1px solid var(--borde); border-radius: 12px;
+              padding: 14px 16px; font-size: 13px; color: var(--tinta-2); counter-increment: paso; }
+  .pasos li::before {
+    content: counter(paso); display: inline-flex; width: 22px; height: 22px;
+    align-items: center; justify-content: center; border-radius: 50%;
+    background: var(--s1); color: #fff; font-weight: 700; font-size: 12px;
+    margin-right: 8px;
+  }
+  .pasos li strong { color: var(--tinta); }
+
+  /* ---------- PANEL ---------- */
+  .kpis { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+          margin-bottom: 14px; }
+  .tile { background: var(--superficie); border: 1px solid var(--borde);
+          border-radius: 12px; padding: 12px 14px 10px; }
   .tile-l { font-size: 12px; color: var(--tinta-2); }
-  .tile-v { font-size: 27px; font-weight: 600; margin: 2px 0 0; }
-  .tile-v small { font-size: 14px; font-weight: 500; color: var(--tinta-2); }
+  .tile-v { font-size: 28px; font-weight: 600; margin: 2px 0 0; }
   .tile-s { font-size: 12px; color: var(--tinta-suave); margin-top: 1px; }
-  .tile-s .icono { font-weight: 700; }
 
-  .filtros { display: flex; align-items: center; gap: 8px; margin: 4px 0 12px; }
+  .filtros { display: flex; align-items: center; gap: 8px; margin: 6px 0 14px; }
   .filtros span { font-size: 12.5px; color: var(--tinta-2); }
   .filtros button {
     font: inherit; font-size: 12.5px; color: var(--tinta-2);
     background: var(--superficie); border: 1px solid var(--borde);
     border-radius: 8px; padding: 4px 12px; cursor: pointer;
   }
-  .filtros button[aria-pressed="true"] {
-    color: var(--tinta); border-color: var(--tinta-2); font-weight: 600;
-  }
+  .filtros button[aria-pressed="true"] { color: var(--tinta); border-color: var(--tinta-2); font-weight: 600; }
 
-  .grid {
-    display: grid; gap: 14px;
-    grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
-  }
-  .card {
-    background: var(--superficie); border: 1px solid var(--borde);
-    border-radius: 12px; padding: 14px 14px 8px; position: relative;
-  }
-  .card h2 { font-size: 13.5px; font-weight: 600; display: flex; align-items: baseline; gap: 8px; }
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(430px, 1fr)); }
+  @media (max-width: 480px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: var(--superficie); border: 1px solid var(--borde);
+          border-radius: 14px; padding: 16px 16px 10px; position: relative; }
+  .card.ancha { grid-column: 1 / -1; }
+  .card h2 { font-size: 14px; font-weight: 600; display: flex; align-items: baseline; gap: 8px;
+             flex-wrap: wrap; margin-bottom: 4px; }
   .card h2 .unidad { font-weight: 400; font-size: 12px; color: var(--tinta-suave); }
   .leyenda { margin-left: auto; display: flex; gap: 14px; font-size: 12px; color: var(--tinta-2); font-weight: 400; }
-  .leyenda i {
-    display: inline-block; width: 14px; height: 0; border-top: 2px solid;
-    border-radius: 2px; vertical-align: middle; margin-right: 5px;
-  }
-  .leyenda .cuadro {
-    display: inline-block; width: 10px; height: 10px; border-radius: 3px;
-    vertical-align: -1px; margin-right: 5px;
-  }
+  .leyenda i { display: inline-block; width: 14px; height: 0; border-top: 2px solid;
+               border-radius: 2px; vertical-align: middle; margin-right: 5px; }
+  .leyenda .cuadro { display: inline-block; width: 10px; height: 10px; border-radius: 3px;
+                     vertical-align: -1px; margin-right: 5px; border-top: none; }
   .plot { position: relative; outline: none; }
   .plot:focus-visible { box-shadow: 0 0 0 2px var(--s1); border-radius: 6px; }
   .plot svg { display: block; width: 100%; }
+  .nota { font-size: 12px; color: var(--tinta-2); padding: 4px 2px 6px; }
 
   .tt {
     position: absolute; pointer-events: none; display: none; z-index: 5;
@@ -116,17 +169,20 @@
   .tt-fila strong { font-weight: 650; }
   .tt-fila span.nom { color: var(--tinta-2); }
 
-  .btn {
-    font: inherit; cursor: pointer; border-radius: 10px;
-    border: 1px solid var(--borde); padding: 6px 16px;
-    background: var(--superficie); color: var(--tinta);
-  }
-  .btn-primario {
-    background: var(--s1); border-color: var(--s1); color: #fff;
-    font-weight: 600; font-size: 15px; padding: 10px 26px;
-  }
-  .btn-primario:hover { filter: brightness(1.08); }
+  /* ---------- DATOS ---------- */
+  .barra-datos { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+  .chk { display: inline-flex; align-items: center; gap: 6px;
+         font-size: 12.5px; color: var(--tinta-2); cursor: pointer; }
+  table { border-collapse: collapse; width: 100%; background: var(--superficie);
+          border: 1px solid var(--borde); border-radius: 12px; overflow: hidden; font-size: 12.5px; }
+  th, td { padding: 6px 10px; text-align: right; font-variant-numeric: tabular-nums; }
+  th { color: var(--tinta-2); font-weight: 600; border-bottom: 1px solid var(--reja); }
+  tr + tr td { border-top: 1px solid var(--reja); }
+  td.izq, th.izq { text-align: left; }
+  .formato { margin-top: 30px; }
+  .formato table td, .formato table th { font-variant-numeric: normal; }
 
+  /* ---------- overlay de inicio de captura ---------- */
   #overlay {
     position: fixed; inset: 0; z-index: 20;
     background: rgba(0,0,0,.38);
@@ -142,33 +198,31 @@
   .ov-titulo { font-size: 17px; font-weight: 650; margin-bottom: 6px; }
   .ov-msg { font-size: 13.5px; color: var(--tinta-2); margin-bottom: 18px; line-height: 1.5; }
   .ov-msg strong { color: var(--tinta); }
-  .pulso {
-    display: inline-block; width: 10px; height: 10px; border-radius: 50%;
-    background: var(--ok); margin-right: 8px; vertical-align: 1px;
-    animation: pulso 1.2s ease-in-out infinite;
-  }
+  .pulso { display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+           background: var(--ok); margin-right: 8px; vertical-align: 1px;
+           animation: pulso 1.2s ease-in-out infinite; }
   @keyframes pulso { 0%,100% { opacity: 1 } 50% { opacity: .25 } }
 
-  details.tabla { margin-top: 18px; }
-  details.tabla summary { cursor: pointer; color: var(--tinta-2); font-size: 13px; }
-  .chk { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px;
-         font-size: 12.5px; color: var(--tinta-2); cursor: pointer; }
-  .nota { font-size: 12px; color: var(--tinta-2); padding: 2px 2px 6px; }
-  table { border-collapse: collapse; margin-top: 10px; width: 100%; background: var(--superficie);
-          border: 1px solid var(--borde); border-radius: 12px; overflow: hidden; font-size: 12.5px; }
-  th, td { padding: 5px 10px; text-align: right; font-variant-numeric: tabular-nums; }
-  th { color: var(--tinta-2); font-weight: 600; border-bottom: 1px solid var(--reja); }
-  tr + tr td { border-top: 1px solid var(--reja); }
+  footer {
+    border-top: 1px solid var(--borde); color: var(--tinta-suave);
+    font-size: 12.5px; padding: 16px clamp(14px, 3vw, 36px);
+    display: flex; gap: 8px; flex-wrap: wrap; justify-content: space-between;
+  }
 </style>
 </head>
 <body>
 
-<header>
-  <h1>MARS-ROBOT</h1>
-  <span class="conexion"><span class="punto" id="punto"></span><span id="conexion-txt">conectando…</span></span>
-  <span class="meta" id="meta-txt"></span>
-  <button class="btn" id="btn-header" hidden></button>
-</header>
+<nav class="topnav">
+  <span class="marca">🛰️ MARS-ROBOT</span>
+  <a href="#/inicio" data-sec="inicio">Inicio</a>
+  <a href="#/panel" data-sec="panel">Panel en vivo</a>
+  <a href="#/datos" data-sec="datos">Datos</a>
+  <span class="nav-der">
+    <span class="meta" id="meta-txt"></span>
+    <span class="conexion"><span class="punto" id="punto"></span><span id="conexion-txt">conectando…</span></span>
+    <button class="btn" id="btn-header" hidden></button>
+  </span>
+</nav>
 
 <div id="overlay" hidden>
   <div class="ov-panel">
@@ -179,60 +233,145 @@
   </div>
 </div>
 
-<section class="kpis">
-  <div class="tile"><div class="tile-l">Tiempo de captura</div><div class="tile-v" id="k-tiempo">–</div><div class="tile-s" id="k-muestras"></div></div>
-  <div class="tile"><div class="tile-l">Batería</div><div class="tile-v" id="k-bateria">–</div><div class="tile-s" id="k-volt"></div></div>
-  <div class="tile"><div class="tile-l">Velocidad</div><div class="tile-v" id="k-vel">–</div><div class="tile-s" id="k-fuente"></div></div>
-  <div class="tile"><div class="tile-l">Distancia</div><div class="tile-v" id="k-dist">–</div><div class="tile-s" id="k-ofs"></div></div>
-  <div class="tile"><div class="tile-l">Inclinación (pitch)</div><div class="tile-v" id="k-pitch">–</div><div class="tile-s" id="k-roll"></div></div>
-  <div class="tile"><div class="tile-l">Sensor de línea</div><div class="tile-v" id="k-linea">–</div><div class="tile-s" id="k-estado"></div></div>
+<main>
+
+<!-- ==================== INICIO ==================== -->
+<section id="sec-inicio">
+  <div class="hero">
+    <div class="chips">
+      <span class="chip">UNSA · Ingeniería de Sistemas</span>
+      <span class="chip">Programación de Sistemas · 2026-A</span>
+      <span class="chip">mBot2 · CyberPi · MicroPython</span>
+    </div>
+    <h1>Telemetría de un vehículo<br>sobre <em>terreno inclinado</em></h1>
+    <p class="baja">
+      MARS-ROBOT registra en tiempo real cómo se comporta un vehículo mBot2 —velocidad,
+      batería, voltaje e inclinación— mientras recorre una línea sobre una plataforma
+      que varía su pendiente hasta ±25°. Como el recorrido es siempre el mismo, la única
+      variable es la inclinación: todo cambio en velocidad y consumo se le puede atribuir.
+    </p>
+    <div class="acciones">
+      <button class="btn btn-primario" onclick="location.hash='#/panel'">▶ Abrir el panel en vivo</button>
+      <button class="btn" onclick="location.hash='#/datos'">Ver los datos</button>
+      <span class="estado-vivo" id="inicio-estado"></span>
+    </div>
+  </div>
+
+  <div class="rasgos">
+    <div class="rasgo"><div class="ico">📈</div><h3>20 variables por muestra</h3>
+      <p>Batería y voltaje, inclinación y giroscopio en 3 ejes, aceleración, velocidad de
+      ambas ruedas con encoder, distancia recorrida y calidad del seguimiento de línea.</p></div>
+    <div class="rasgo"><div class="ico">🛤️</div><h3>Recorrido controlado</h3>
+      <p>Seguimiento de línea con corrección graduada y recuperación automática: el trayecto
+      es reproducible y los experimentos, comparables.</p></div>
+    <div class="rasgo"><div class="ico">⛰️</div><h3>Pendiente máxima</h3>
+      <p>El panel cruza velocidad con inclinación en vivo y muestra la curva de pérdida de
+      fuerza: dónde cae a cero es la pendiente límite del vehículo.</p></div>
+    <div class="rasgo"><div class="ico">💾</div><h3>Todo queda registrado</h3>
+      <p>Cada corrida se guarda automáticamente como CSV con marca de tiempo, listo para el
+      análisis y los informes del curso.</p></div>
+  </div>
+
+  <div class="pasos">
+    <h2>Cómo funciona una captura</h2>
+    <ol>
+      <li><strong>Subir el programa</strong> al robot desde mBlock (modo Cargar) y desconectarlo del editor.</li>
+      <li><strong>Iniciar captura</strong> en este panel: la PC abre el puerto USB del robot.</li>
+      <li><strong>Pulsar A</strong> en el carrito sobre la línea: los datos fluyen en vivo a los gráficos.</li>
+      <li><strong>Pulsar B</strong> al terminar: el CSV queda guardado y listo para analizar.</li>
+    </ol>
+  </div>
 </section>
 
-<div class="filtros" id="filtros">
-  <span>Ventana</span>
-  <button data-v="30">30 s</button>
-  <button data-v="60" aria-pressed="true">60 s</button>
-  <button data-v="120">2 min</button>
-  <button data-v="todo">Todo</button>
-</div>
+<!-- ==================== PANEL ==================== -->
+<section id="sec-panel" hidden>
+  <section class="kpis">
+    <div class="tile"><div class="tile-l">Tiempo de captura</div><div class="tile-v" id="k-tiempo">–</div><div class="tile-s" id="k-muestras"></div></div>
+    <div class="tile"><div class="tile-l">Batería</div><div class="tile-v" id="k-bateria">–</div><div class="tile-s" id="k-volt"></div></div>
+    <div class="tile"><div class="tile-l">Velocidad</div><div class="tile-v" id="k-vel">–</div><div class="tile-s" id="k-fuente"></div></div>
+    <div class="tile"><div class="tile-l">Distancia</div><div class="tile-v" id="k-dist">–</div><div class="tile-s" id="k-ofs"></div></div>
+    <div class="tile"><div class="tile-l">Inclinación (pitch)</div><div class="tile-v" id="k-pitch">–</div><div class="tile-s" id="k-roll"></div></div>
+    <div class="tile"><div class="tile-l">Sensor de línea</div><div class="tile-v" id="k-linea">–</div><div class="tile-s" id="k-estado"></div></div>
+  </section>
 
-<section class="grid">
-  <div class="card">
-    <h2>Velocidad <span class="unidad">RPM</span>
-      <span class="leyenda"><span><i style="border-color:var(--s1)"></i>Izquierda</span><span><i style="border-color:var(--s2)"></i>Derecha</span></span>
-    </h2>
-    <div class="plot" id="ch-vel" tabindex="0"></div>
+  <div class="filtros" id="filtros">
+    <span>Ventana</span>
+    <button data-v="30">30 s</button>
+    <button data-v="60" aria-pressed="true">60 s</button>
+    <button data-v="120">2 min</button>
+    <button data-v="todo">Todo</button>
   </div>
-  <div class="card">
-    <h2>Inclinación <span class="unidad">grados</span>
-      <span class="leyenda"><span><i style="border-color:var(--s1)"></i>Roll</span><span><i style="border-color:var(--s2)"></i>Pitch</span></span>
-    </h2>
-    <div class="plot" id="ch-inc" tabindex="0"></div>
-  </div>
-  <div class="card">
-    <h2>Voltaje estimado <span class="unidad">V</span></h2>
-    <div class="plot" id="ch-volt" tabindex="0"></div>
-  </div>
-  <div class="card">
-    <h2>Seguimiento de línea
-      <span class="leyenda" id="ley-linea"></span>
-    </h2>
-    <div class="plot" id="ch-linea" tabindex="0"></div>
-  </div>
-  <div class="card">
-    <h2>Velocidad según inclinación <span class="unidad">RPM vs pitch °</span>
-      <span class="leyenda"><span><i class="cuadro" style="background:var(--tinta-suave);border-top:none;opacity:.5"></i>muestras</span><span><i style="border-color:var(--s1)"></i>promedio</span></span>
-    </h2>
-    <div class="plot" id="ch-rel" tabindex="0"></div>
-    <div class="nota" id="aviso-rel" hidden>⚠ velocidad comandada (encoder aún inactivo): la caída real con la pendiente no se ve todavía</div>
-  </div>
+
+  <section class="grid">
+    <div class="card">
+      <h2>Velocidad <span class="unidad">RPM</span>
+        <span class="leyenda"><span><i style="border-color:var(--s1)"></i>Izquierda</span><span><i style="border-color:var(--s2)"></i>Derecha</span></span>
+      </h2>
+      <div class="plot" id="ch-vel" tabindex="0"></div>
+    </div>
+    <div class="card">
+      <h2>Inclinación <span class="unidad">grados</span>
+        <span class="leyenda"><span><i style="border-color:var(--s1)"></i>Roll</span><span><i style="border-color:var(--s2)"></i>Pitch</span></span>
+      </h2>
+      <div class="plot" id="ch-inc" tabindex="0"></div>
+    </div>
+    <div class="card">
+      <h2>Voltaje estimado <span class="unidad">V</span></h2>
+      <div class="plot" id="ch-volt" tabindex="0"></div>
+    </div>
+    <div class="card">
+      <h2>Seguimiento de línea
+        <span class="leyenda" id="ley-linea"></span>
+      </h2>
+      <div class="plot" id="ch-linea" tabindex="0"></div>
+    </div>
+    <div class="card ancha">
+      <h2>Velocidad según inclinación <span class="unidad">RPM vs pitch ° — la curva cae donde el carrito pierde fuerza</span>
+        <span class="leyenda"><span><i class="cuadro" style="background:var(--tinta-suave);opacity:.5"></i>muestras</span><span><i style="border-color:var(--s1)"></i>promedio por tramo</span></span>
+      </h2>
+      <div class="plot" id="ch-rel" tabindex="0"></div>
+      <div class="nota" id="aviso-rel" hidden>⚠ velocidad comandada (encoder aún inactivo): la caída real con la pendiente no se ve todavía</div>
+    </div>
+  </section>
 </section>
 
-<details class="tabla">
-  <summary>Tabla de datos (últimas 20 muestras)</summary>
-  <label class="chk"><input type="checkbox" id="chk-cols"> mostrar todas las columnas</label>
+<!-- ==================== DATOS ==================== -->
+<section id="sec-datos" hidden>
+  <h2 class="sec-titulo">Datos de la sesión</h2>
+  <div class="barra-datos">
+    <label class="chk"><input type="checkbox" id="chk-cols"> mostrar las 20 columnas</label>
+    <a class="btn" href="/csv" download>⬇ Descargar CSV de la sesión</a>
+    <span class="meta" id="datos-resumen"></span>
+  </div>
   <div style="overflow-x:auto"><table id="tabla"></table></div>
-</details>
+
+  <div class="formato">
+    <h2 class="sec-titulo">Formato del registro (20 columnas)</h2>
+    <div style="overflow-x:auto">
+    <table>
+      <tr><th class="izq">Columna</th><th class="izq">Descripción</th></tr>
+      <tr><td class="izq">t_s</td><td class="izq">tiempo desde el inicio (s)</td></tr>
+      <tr><td class="izq">bateria_pct · voltaje_v</td><td class="izq">batería del CyberPi (%) y voltaje (V) — estimado por %, o real si está conectado el divisor en S1</td></tr>
+      <tr><td class="izq">roll · pitch · yaw</td><td class="izq">inclinación en 3 ejes (°), del IMU del CyberPi</td></tr>
+      <tr><td class="izq">acc_x/y/z</td><td class="izq">aceleración (m/s², incluye gravedad)</td></tr>
+      <tr><td class="izq">vel_rpm · vel2_rpm</td><td class="izq">velocidad de rueda izquierda y derecha (RPM)</td></tr>
+      <tr><td class="izq">vel_real</td><td class="izq">1 = medida por el encoder · 0 = velocidad comandada (respaldo)</td></tr>
+      <tr><td class="izq">estado · ofs_linea</td><td class="izq">estado crudo del sensor de línea y desviación −100 (izq) … +100 (der)</td></tr>
+      <tr><td class="izq">dist_cm</td><td class="izq">distancia recorrida (cm), del ángulo acumulado del encoder</td></tr>
+      <tr><td class="izq">gyro_x/y/z</td><td class="izq">velocidad angular (°/s)</td></tr>
+      <tr><td class="izq">bat2_pct</td><td class="izq">batería del mBot2 Shield (%) — la que alimenta los motores</td></tr>
+      <tr><td class="izq">luz</td><td class="izq">luz ambiente del CyberPi</td></tr>
+    </table>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <span>MARS-ROBOT — Programación de Sistemas · UNSA · 2026-A</span>
+  <span>mBot2 (CyberPi) · MicroPython · Python · panel local sin dependencias externas</span>
+</footer>
 
 <script>
 "use strict";
@@ -274,6 +413,22 @@ const el = (tag, attrs) => {
   return e;
 };
 
+// ---------- navegación entre secciones (hash router) ----------
+const SECCIONES = ["inicio", "panel", "datos"];
+function seccionActual() {
+  const h = location.hash.replace("#/", "");
+  return SECCIONES.includes(h) ? h : "inicio";
+}
+function enrutar() {
+  const s = seccionActual();
+  for (const n of SECCIONES) $("sec-" + n).hidden = (n !== s);
+  for (const a of document.querySelectorAll(".topnav a"))
+    a.classList.toggle("activo", a.dataset.sec === s);
+  render();
+  pintarConexion();
+}
+addEventListener("hashchange", enrutar);
+
 // ---------- escalas y ticks ----------
 function ticks(min, max, n) {
   const span = max - min || 1;
@@ -288,7 +443,6 @@ function ticks(min, max, n) {
 
 // ---------- gráfico de líneas ----------
 function graficoLinea(cont, cfg) {
-  // cfg: { series: [{nombre, colorVar, idx, fmt}], dominioY(datos) -> [min,max], alto }
   const tt = document.createElement("div");
   tt.className = "tt";
   cont.parentElement.appendChild(tt);
@@ -297,8 +451,8 @@ function graficoLinea(cont, cfg) {
   function dibujar(vis, x0, x1) {
     datosVis = vis;
     const w = cont.clientWidth || 320;
-    const alto = cfg.alto || 190;
-    const m = { izq: 42, der: 14, arr: 10, aba: 24 };
+    const alto = cfg.alto || 240;
+    const m = { izq: 42, der: 14, arr: 12, aba: 26 };
     const pw = w - m.izq - m.der, ph = alto - m.arr - m.aba;
     const [y0, y1] = cfg.dominioY(vis);
     const X = t => m.izq + (x1 === x0 ? 0 : (t - x0) / (x1 - x0) * pw);
@@ -321,7 +475,7 @@ function graficoLinea(cont, cfg) {
     svg.appendChild(el("line", { x1: m.izq, x2: w - m.der, y1: m.arr + ph, y2: m.arr + ph,
       stroke: cssVar("--eje"), "stroke-width": 1 }));
     for (const t of ticks(x0, x1, 5)) {
-      const et = el("text", { x: X(t), y: alto - 7, "text-anchor": "middle",
+      const et = el("text", { x: X(t), y: alto - 8, "text-anchor": "middle",
         fill: cssVar("--tinta-suave"), "font-size": 11 });
       et.textContent = t + " s";
       svg.appendChild(et);
@@ -426,8 +580,8 @@ function graficoFranja(cont) {
   function dibujar(vis, x0, x1) {
     datosVis = vis;
     const w = cont.clientWidth || 320;
-    const alto = 88;
-    const m = { izq: 42, der: 14, arr: 14, aba: 24 };
+    const alto = 240;
+    const m = { izq: 42, der: 14, arr: 40, aba: 60 };
     const pw = w - m.izq - m.der, ph = alto - m.arr - m.aba;
     const X = t => m.izq + (x1 === x0 ? 0 : (t - x0) / (x1 - x0) * pw);
     escala = { X, x0, x1, m, pw };
@@ -448,7 +602,7 @@ function graficoFranja(cont) {
     svg.appendChild(el("line", { x1: m.izq, x2: w - m.der, y1: m.arr + ph, y2: m.arr + ph,
       stroke: cssVar("--eje"), "stroke-width": 1 }));
     for (const t of ticks(x0, x1, 5)) {
-      const et = el("text", { x: X(t), y: alto - 7, "text-anchor": "middle",
+      const et = el("text", { x: X(t), y: m.arr + ph + 18, "text-anchor": "middle",
         fill: cssVar("--tinta-suave"), "font-size": 11 });
       et.textContent = t + " s";
       svg.appendChild(et);
@@ -460,7 +614,8 @@ function graficoFranja(cont) {
     const f = datosVis[i], g = GRUPOS[grupoEstado(f[IDX.EST])];
     tt.replaceChildren();
     const tEl = document.createElement("div"); tEl.className = "tt-t";
-    tEl.textContent = f[IDX.T].toFixed(1) + " s · estado " + f[IDX.EST];
+    tEl.textContent = f[IDX.T].toFixed(1) + " s · estado " + f[IDX.EST] +
+      (f[IDX.OFS] != null ? " · desv " + f[IDX.OFS] : "");
     const fila = document.createElement("div"); fila.className = "tt-fila";
     const val = document.createElement("strong");
     val.textContent = g.icono + " " + g.nombre;
@@ -505,8 +660,8 @@ function graficoRelacion(cont) {
       pts.push([f[IDX.PITCH], y]);
     }
     const w = cont.clientWidth || 320;
-    const alto = 190;
-    const m = { izq: 42, der: 14, arr: 10, aba: 24 };
+    const alto = 320;
+    const m = { izq: 42, der: 14, arr: 12, aba: 26 };
     const pw = w - m.izq - m.der, ph = alto - m.arr - m.aba;
     const xs = pts.map(p => p[0]);
     const x0 = Math.min(-2, ...xs) - 1, x1 = Math.max(2, ...xs) + 1;
@@ -542,7 +697,7 @@ function graficoRelacion(cont) {
       svg.appendChild(el("line", { x1: X(0), x2: X(0), y1: m.arr, y2: m.arr + ph,
         stroke: cssVar("--eje"), "stroke-width": 1 }));
     for (const t of ticks(x0, x1, 6)) {
-      const et = el("text", { x: X(t), y: alto - 7, "text-anchor": "middle",
+      const et = el("text", { x: X(t), y: alto - 8, "text-anchor": "middle",
         fill: cssVar("--tinta-suave"), "font-size": 11 });
       et.textContent = t + "°";
       svg.appendChild(et);
@@ -648,7 +803,7 @@ const chRel = graficoRelacion($("ch-rel"));
 for (const g of GRUPOS) {
   const s = document.createElement("span");
   const c = document.createElement("i"); c.className = "cuadro";
-  c.style.background = `var(${g.css})`; c.style.borderTop = "none";
+  c.style.background = `var(${g.css})`;
   s.append(c, document.createTextNode(g.icono + " " + g.nombre));
   $("ley-linea").appendChild(s);
 }
@@ -659,59 +814,69 @@ function render() {
   if (!n) return;
   const ult = filas[n - 1];
   const t = ult[IDX.T];
+  const sec = seccionActual();
 
-  $("k-tiempo").textContent = t.toFixed(1) + " s";
-  $("k-muestras").textContent = n + " muestras · " + (t > 0 ? (n / t).toFixed(1) : "–") + "/s";
-  $("k-bateria").textContent = ult[IDX.PCT].toFixed(0) + " %";
-  $("k-volt").textContent = ult[IDX.V].toFixed(2) + " V estimados";
-  $("k-vel").textContent = ult[IDX.RPM].toFixed(1) + " RPM";
-  $("k-fuente").textContent = (ult[IDX.REAL] ? "✓ encoder" : "comandada (sin encoder)") +
-    (ult[IDX.VEL2] != null ? " · der " + ult[IDX.VEL2].toFixed(1) : "");
-  if (ult[IDX.DIST] != null) {
-    $("k-dist").textContent = ult[IDX.DIST] >= 100 ?
-      (ult[IDX.DIST] / 100).toFixed(2) + " m" : ult[IDX.DIST].toFixed(0) + " cm";
-    $("k-ofs").textContent = ult[IDX.OFS] != null ? "desv. línea " + ult[IDX.OFS] : "";
-  } else {
-    $("k-dist").textContent = "–";
-    $("k-ofs").textContent = "sin encoder / captura vieja";
-  }
-  $("k-pitch").textContent = ult[IDX.PITCH].toFixed(1) + "°";
-  $("k-roll").textContent = "roll " + ult[IDX.ROLL].toFixed(1) + "° · yaw " + ult[IDX.YAW].toFixed(0) + "°";
-  const g = GRUPOS[grupoEstado(ult[IDX.EST])];
-  $("k-linea").textContent = g.icono + " " + g.nombre;
-  $("k-estado").textContent = "estado crudo " + ult[IDX.EST];
+  $("inicio-estado").textContent = servidor === "escuchando" && !fin ?
+    "● captura en curso: " + n + " muestras" : (n ? n + " muestras en la sesión" : "");
 
-  // ventana temporal (escala común para los 4 gráficos)
-  const x1 = Math.max(t, 10);
-  const x0 = ventana === "todo" ? 0 : Math.max(0, x1 - ventana);
-  const vis = filas.filter(f => f[IDX.T] >= x0);
-
-  chVel.dibujar(vis, x0, x1);
-  chInc.dibujar(vis, x0, x1);
-  chVolt.dibujar(vis, x0, x1);
-  chLinea.dibujar(vis, x0, x1);
-  chRel.dibujar(vis);
-  // aviso: si ninguna muestra viene del encoder, la relación aún no es real
-  $("aviso-rel").hidden = vis.some(f => f[IDX.REAL] === 1);
-
-  // tabla (últimas 20): columnas principales por defecto, todas si se marca
-  const idxs = $("chk-cols").checked ? COLS.map((_, i) => i) : COLS_PRINCIPALES;
-  const tabla = $("tabla");
-  tabla.replaceChildren();
-  const trh = document.createElement("tr");
-  for (const i of idxs) { const th = document.createElement("th"); th.textContent = COLS[i]; trh.appendChild(th); }
-  tabla.appendChild(trh);
-  for (const f of filas.slice(-20)) {
-    const tr = document.createElement("tr");
-    for (const i of idxs) {
-      const v = f[i];
-      const td = document.createElement("td");
-      td.textContent = v == null ? "–" :
-                       COLS_ENTERAS.has(i) ? v.toFixed(0) :
-                       COLS_2DEC.has(i) ? v.toFixed(2) : v.toFixed(1);
-      tr.appendChild(td);
+  if (sec === "panel") {
+    $("k-tiempo").textContent = t.toFixed(1) + " s";
+    $("k-muestras").textContent = n + " muestras · " + (t > 0 ? (n / t).toFixed(1) : "–") + "/s";
+    $("k-bateria").textContent = ult[IDX.PCT].toFixed(0) + " %";
+    $("k-volt").textContent = ult[IDX.V].toFixed(2) + " V" +
+      (ult[IDX.PCT2] != null ? " · shield " + ult[IDX.PCT2].toFixed(0) + " %" : " estimados");
+    $("k-vel").textContent = ult[IDX.RPM].toFixed(1) + " RPM";
+    $("k-fuente").textContent = (ult[IDX.REAL] ? "✓ encoder" : "comandada (sin encoder)") +
+      (ult[IDX.VEL2] != null ? " · der " + ult[IDX.VEL2].toFixed(1) : "");
+    if (ult[IDX.DIST] != null) {
+      $("k-dist").textContent = ult[IDX.DIST] >= 100 ?
+        (ult[IDX.DIST] / 100).toFixed(2) + " m" : ult[IDX.DIST].toFixed(0) + " cm";
+      $("k-ofs").textContent = ult[IDX.OFS] != null ? "desv. línea " + ult[IDX.OFS] : "";
+    } else {
+      $("k-dist").textContent = "–";
+      $("k-ofs").textContent = "sin encoder / captura vieja";
     }
-    tabla.appendChild(tr);
+    $("k-pitch").textContent = ult[IDX.PITCH].toFixed(1) + "°";
+    $("k-roll").textContent = "roll " + ult[IDX.ROLL].toFixed(1) + "° · yaw " + ult[IDX.YAW].toFixed(0) + "°";
+    const g = GRUPOS[grupoEstado(ult[IDX.EST])];
+    $("k-linea").textContent = g.icono + " " + g.nombre;
+    $("k-estado").textContent = "estado crudo " + ult[IDX.EST];
+
+    // ventana temporal (escala común para los gráficos de tiempo)
+    const x1 = Math.max(t, 10);
+    const x0 = ventana === "todo" ? 0 : Math.max(0, x1 - ventana);
+    const vis = filas.filter(f => f[IDX.T] >= x0);
+
+    chVel.dibujar(vis, x0, x1);
+    chInc.dibujar(vis, x0, x1);
+    chVolt.dibujar(vis, x0, x1);
+    chLinea.dibujar(vis, x0, x1);
+    chRel.dibujar(vis);
+    // aviso: si ninguna muestra viene del encoder, la relación aún no es real
+    $("aviso-rel").hidden = vis.some(f => f[IDX.REAL] === 1);
+  }
+
+  if (sec === "datos") {
+    $("datos-resumen").textContent = n + " muestras · " + t.toFixed(1) + " s" +
+      (meta.archivo ? " · " + meta.archivo : "");
+    const idxs = $("chk-cols").checked ? COLS.map((_, i) => i) : COLS_PRINCIPALES;
+    const tabla = $("tabla");
+    tabla.replaceChildren();
+    const trh = document.createElement("tr");
+    for (const i of idxs) { const th = document.createElement("th"); th.textContent = COLS[i]; trh.appendChild(th); }
+    tabla.appendChild(trh);
+    for (const f of filas.slice(-20)) {
+      const tr = document.createElement("tr");
+      for (const i of idxs) {
+        const v = f[i];
+        const td = document.createElement("td");
+        td.textContent = v == null ? "–" :
+                         COLS_ENTERAS.has(i) ? v.toFixed(0) :
+                         COLS_2DEC.has(i) ? v.toFixed(2) : v.toFixed(1);
+        tr.appendChild(td);
+      }
+      tabla.appendChild(tr);
+    }
   }
 }
 
@@ -732,6 +897,7 @@ async function iniciar() {
   $("ov-btn").disabled = true;
   try { await fetch("/iniciar", { method: "POST" }); } catch (e) {}
   $("ov-btn").disabled = false;
+  if (seccionActual() !== "panel") location.hash = "#/panel";
 }
 async function detener() {
   try { await fetch("/detener", { method: "POST" }); } catch (e) {}
@@ -745,34 +911,41 @@ function pintarConexion() {
   if (conectado === false) {
     punto.classList.add("error");
     ctxt.textContent = "sin conexión con dashboard.py";
-    overlay("🔌", "Sin conexión",
-      [txt("No se pudo hablar con "), fuerte("dashboard.py"), txt(". ¿Sigue corriendo en la Terminal?")]);
+    if (seccionActual() === "panel")
+      overlay("🔌", "Sin conexión",
+        [txt("No se pudo hablar con "), fuerte("dashboard.py"), txt(". ¿Sigue corriendo en la Terminal?")]);
+    else $("overlay").hidden = true;
     return;
   }
 
-  // botón de la cabecera: Detener mientras escucha, Iniciar cuando está inactivo con datos
+  // botón de la cabecera: Detener mientras escucha, Iniciar cuando está inactivo
   if (servidor === "escuchando") {
     btnH.hidden = false; btnH.textContent = "■ Detener"; btnH.onclick = detener;
-  } else if ((servidor === "inactivo" || servidor === "error") && filas.length) {
-    btnH.hidden = false; btnH.textContent = "▶ Iniciar otra captura"; btnH.onclick = iniciar;
+  } else if (servidor === "inactivo" || servidor === "error") {
+    btnH.hidden = false;
+    btnH.textContent = filas.length ? "▶ Iniciar otra captura" : "▶ Iniciar captura";
+    btnH.onclick = iniciar;
   }
 
   if (filas.length) {
-    // ya hay datos: el panel manda; overlay fuera
     $("overlay").hidden = true;
     if (servidor === "escuchando" && !fin) {
       punto.classList.add("vivo");
       ctxt.textContent = "capturando en vivo · " + filas.length + " muestras";
     } else if (fin) {
-      ctxt.textContent = "captura finalizada · " + filas.length + " muestras" +
-        (mensaje ? " · " + mensaje : "");
+      ctxt.textContent = "captura finalizada · " + filas.length + " muestras";
     } else {
       ctxt.textContent = mensaje || ("captura detenida · " + filas.length + " muestras");
     }
     return;
   }
 
-  // sin datos todavía: el overlay guía el flujo
+  // sin datos todavía: el overlay guía el flujo, pero solo dentro del panel
+  if (seccionActual() !== "panel") {
+    $("overlay").hidden = true;
+    ctxt.textContent = servidor === "escuchando" ? "conectado · esperando al carrito" : "listo";
+    return;
+  }
   if (servidor === "inactivo") {
     ctxt.textContent = "listo";
     overlay("🛰️", "Panel listo",
@@ -839,6 +1012,7 @@ let timerResize = null;
 addEventListener("resize", () => { clearTimeout(timerResize); timerResize = setTimeout(render, 150); });
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => setTimeout(render, 50));
 
+enrutar();
 sondear();
 </script>
 </body>
