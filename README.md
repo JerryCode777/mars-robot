@@ -26,7 +26,8 @@ cambia es la inclinación, lo que permite atribuirle los cambios de velocidad y 
 - **Giroscopio/acelerómetro integrado en el CyberPi** → mide la inclinación real del robot.
   *No hace falta un IMU aparte en la plataforma: el robot mide la inclinación que sufre.*
 - **Motores con encoder** (puertos EM1/EM2) → velocidad.
-- **Batería LiPo de 1 celda**, 2500 mAh (3,3 V vacía – 4,2 V llena).
+- **Dos baterías**: la del CyberPi (`get_battery()`) y la del **Shield, LiPo 1S de
+  2500 mAh** (3,3–4,2 V), que alimenta los motores (`get_extra_battery()` → `bat2_pct`).
 - Lenguaje: **MicroPython** dentro del robot.
 
 ---
@@ -60,7 +61,8 @@ Como el robot corre en modo Upload (aislado del PC), la salida se hace por **cab
 
 1. El robot imprime el CSV con **`print()`** (no `cyberpi.console.println`, que solo va a la
    pantalla del robot).
-2. En la PC, `tools/leer_datos.py` (pyserial) lee el puerto USB y guarda el CSV.
+2. En la PC, `tools/dashboard.py` (panel web, recomendado) o `tools/leer_datos.py`
+   (lector simple) leen el puerto USB con pyserial y guardan el CSV.
 3. Puerto del robot en este equipo: **`/dev/cu.usbserial-10`**, a **115200 baudios**.
 
 ⚠️ **El puerto USB no se puede compartir.** Hay que **desconectar el robot en mBlock/mLink**
@@ -163,20 +165,21 @@ proyecto/
 │   ├── captacion_datos.py             ← programa principal (línea + captura)
 │   └── probe_encoder.py               ← sonda de diagnóstico del encoder (pendiente de correr)
 ├── tools/                             ← código que corre en la PC
-│   ├── leer_datos.py                  ← lector USB (pyserial) → guarda el CSV
 │   ├── dashboard.py                   ← lector USB + panel web en vivo (localhost:8765)
-│   └── dashboard_web.html             ← interfaz del panel (la sirve dashboard.py)
+│   ├── dashboard_web.html             ← interfaz del panel (la sirve dashboard.py)
+│   └── leer_datos.py                  ← lector simple de terminal (alternativa mínima)
 └── docs/
-    ├── 01-medicion-voltaje.md         ← método % → voltios
-    └── Informe_Prueba_Captura_MARS-ROBOT.docx ← informe de la 1ª prueba (APA)
+    ├── 01-medicion-voltaje.md         ← voltaje: estimación por % y divisor resistivo en S1
+    ├── Informe_Final_MARS-ROBOT.docx  ← INFORME FINAL en APA 7 (ver nota)
+    └── Informe_Prueba_Captura_MARS-ROBOT.docx ← informe histórico de la 1ª prueba
 ```
 
-> 📌 `docs/Informe_Final_MARS-ROBOT.docx` (19/07/2026) es el **informe final** del
-> proyecto: resumen, fundamentos, diseño completo del sistema, prueba de validación,
-> conclusiones y referencias APA. Tiene marcadores en rojo de dos tipos: `INSERTAR
-> CAPTURA` (4 capturas del panel) y `PENDIENTE` (datos de la prueba final sobre la
-> plataforma, con tabla de resultados por inclinación lista para llenar). Se genera
-> con `python-docx`.
+> 📌 `docs/Informe_Final_MARS-ROBOT.docx` es el **informe final** en formato APA 7
+> (portada, resumen, fundamentos, sensores, diccionario de las 20 columnas, guía de
+> recuperación de datos, resultados y referencias). Tiene marcadores en rojo de dos
+> tipos: `INSERTAR CAPTURA` (6 figuras: foto del carrito, 4 capturas del panel y la
+> curva final) y `PENDIENTE` (docente, fecha y datos de la prueba final, con la Tabla 5
+> por inclinación lista para llenar). Se genera con `python-docx`.
 
 ---
 
@@ -191,33 +194,33 @@ proyecto/
 4. **Desconectar** el robot en mBlock (libera el puerto USB).
 5. En una Terminal, desde la carpeta del proyecto:
    ```bash
-   python3 tools/leer_datos.py
+   python3 tools/dashboard.py
    ```
-6. Colocar el robot sobre la línea y **pulsar A**. Los datos aparecen en pantalla y se guardan
-   en `datos_AAAAMMDD_HHMMSS.csv`.
-7. **Pulsar B** en el robot para detener; **Ctrl+C** en la Terminal para cerrar el archivo.
+   y abrir **http://localhost:8765** en el navegador.
+6. Pulsar **▶ Iniciar captura** en el panel (abre el puerto USB y guía cada paso).
+7. Colocar el robot sobre la línea y **pulsar A** cuando el panel lo pida: los gráficos
+   se actualizan en vivo y todo se guarda en `datos_AAAAMMDD_HHMMSS.csv`.
+8. **Pulsar B** en el robot para detener el recorrido y **■ Detener** en el panel para
+   liberar el puerto (el CSV queda cerrado y guardado).
 
-### Panel en tiempo real (alternativa al lector simple)
+### El panel web (tools/dashboard.py)
 
-`tools/dashboard.py` hace lo mismo que `leer_datos.py` (lee el USB y guarda el CSV)
-y además sirve un **panel web local** con gráficos en vivo: velocidad, inclinación
-(roll/pitch), voltaje y estado del seguidor de línea, con ventana de 30 s / 60 s /
-2 min / todo, tema claro/oscuro y tabla de datos.
+App de una sola página con tres secciones: **Inicio** (presentación del proyecto),
+**Panel en vivo** (6 indicadores + 5 gráficos: velocidad de ambas ruedas, inclinación
+roll/pitch, voltaje, franja del seguidor de línea y **velocidad según inclinación** —
+la curva que revela la pendiente máxima) y **Datos** (tabla, guía del formato y
+descarga del CSV de la sesión). Ventana de 30 s / 60 s / 2 min / todo y tema
+claro/oscuro automático. No usa internet ni librerías extra (solo pyserial para el
+modo USB).
 
-```bash
-python3 tools/dashboard.py                 # con el robot (mismo flujo: paso 4 antes)
-# abrir  http://localhost:8765  en el navegador
-```
-
-Para probarlo **sin robot**:
+Para probarlo **sin robot** (mismo flujo con botón):
 
 ```bash
 python3 tools/dashboard.py --replay datos_20260713_183211.csv   # reproduce una captura real
 python3 tools/dashboard.py --demo                               # datos sintéticos continuos
 ```
 
-No usa internet ni librerías extra (solo pyserial para el modo USB). El panel es
-solo visualización: el CSV se sigue guardando igual que siempre.
+Alternativa mínima sin panel: `python3 tools/leer_datos.py` (solo terminal + CSV).
 
 ### Dependencias de la PC
 - `pyserial` (instalado: 3.5) → `python3 -m pip install pyserial`
@@ -239,7 +242,7 @@ vel2_rpm,dist_cm,gyro_x,gyro_y,gyro_z,ofs_linea,bat2_pct,luz
 |---|---|
 | `t_s` | tiempo desde el inicio (s) |
 | `bateria_pct` | nivel de batería del CyberPi (%) |
-| `voltaje_v` | voltaje estimado (V) — derivado del % |
+| `voltaje_v` | voltaje (V) — estimado por %, o **real** si el divisor está en S1 (`PIN_VOLTAJE = "S1"`) |
 | `roll`, `pitch`, `yaw` | inclinación en 3 ejes (grados) |
 | `acc_x/y/z` | aceleración (m/s², incluye gravedad) |
 | `vel_rpm` | velocidad rueda **izquierda** EM1 (RPM) |
@@ -262,10 +265,18 @@ Las herramientas de la PC leen **ambos formatos** (12 o 20 columnas).
 
 ### ✅ Funcionando
 - Seguimiento de línea estable (con corrección graduada y recuperación al perder la línea).
-- Captura sincronizada de batería, voltaje, inclinación 3 ejes, aceleración y velocidad.
+- Captura sincronizada de **20 variables** por muestra (batería ×2, voltaje, inclinación,
+  aceleración y giroscopio 3 ejes, velocidad de ambas ruedas, distancia, desviación de
+  línea, luz), a 0,1 s de intervalo mínimo.
 - Transmisión por USB a la PC y guardado automático en CSV.
+- **Panel web local** con captura guiada por botón, 5 gráficos en vivo (incluida la curva
+  velocidad vs inclinación), tabla y descarga del CSV.
+- Voltaje real por divisor resistivo **implementado en el código** (falta montar las 2
+  resistencias y poner `PIN_VOLTAJE = "S1"`).
 - Primera prueba real completada: **377 muestras en 115,8 s**.
-- Informe de la prueba en Word con formato APA (`docs/Informe_Prueba_Captura_MARS-ROBOT.docx`).
+- **Informe final en APA 7** (`docs/Informe_Final_MARS-ROBOT.docx`) a falta de capturas
+  y de los datos de la prueba final.
+- Proyecto en GitHub: **https://github.com/JerryCode777/mars-robot** (público).
 
 ### 📊 Resultados de la 1ª prueba (`datos_20260713_183211.csv`)
 | Variable | Resultado | Lectura |
@@ -279,29 +290,38 @@ Las herramientas de la PC leen **ambos formatos** (12 o 20 columnas).
 | `vel_real` | **0 en todas** | ⚠️ el encoder aún NO se está leyendo |
 
 ### ⏳ Pendiente
-1. **Activar la lectura del encoder** (`vel_real` debe salir 1). El nombre de la función aún es
-   desconocido: `mbot2.encoder_motor_get_speed()` **no está confirmado**. Para resolverlo se
-   creó `src/probe_encoder.py`, que lista `dir(mbot2)` y prueba 7 nombres candidatos.
-   **Siguiente paso: subir esa sonda y leer su salida.**
-2. **Construir la plataforma inclinable** (±25° en 3 ejes) — parte mecánica, no iniciada.
-3. **Confirmar con el docente** el alcance de "electricidad de forma detallada": el mBot2 **no
+1. **Confirmar la lectura del encoder** (`vel_real` debe salir 1). El nombre exacto no está
+   en la documentación pública; `captacion_datos.py` ya prueba solo los candidatos más
+   probables (`EM_get_speed`/`EM_get_angle`, por el patrón de `EM_stop`). Si la próxima
+   captura sigue con `vel_real=0`, subir `src/probe_encoder.py` y leer su salida.
+   ⚠️ Sin encoder, la curva velocidad vs inclinación no refleja la pérdida real de fuerza.
+2. **Montar el divisor de voltaje** (10 kΩ + 20 kΩ → pin S1) y activar `PIN_VOLTAJE = "S1"`
+   — ver `docs/01-medicion-voltaje.md` §8.
+3. **Construir la plataforma inclinable** (±25° en 3 ejes) — parte mecánica, no iniciada.
+4. **Confirmar con el docente** el alcance de "electricidad de forma detallada": el mBot2 **no
    tiene sensor de corriente**. Si se exige medir corriente/potencia, hace falta un **INA219**
    o **ACS712** externo.
-4. Campañas de medición a distintas inclinaciones y análisis velocidad/consumo vs. inclinación.
-5. Para la demo final: migrar la transmisión de USB a **Wi-Fi** para que el robot se mueva libre.
+5. **Prueba final**: campañas a distintas inclinaciones; con su CSV se llenan la Tabla 5,
+   el análisis y las conclusiones del informe final. Insertar las 6 figuras (foto del
+   carrito + capturas del panel).
+6. Para la demo final: migrar la transmisión de USB a **Wi-Fi** para que el robot se mueva libre.
 
 ---
 
-## 9. Parámetros de ajuste del seguidor de línea
+## 9. Parámetros de ajuste
 
 En `src/captacion_datos.py`:
 
 ```python
-VEL_BASE   = 20   # velocidad en recto. Se sale en curvas -> bajar a 16 o 14
-VEL_SUAVE  = 12   # rueda interior en corrección leve. Zigzaguea -> subir a 15
-VEL_FUERTE = 4    # rueda interior en corrección fuerte. No gira lo suficiente -> bajar a 2
-PERIODO_S  = 0.2  # segundos entre muestras de datos
+VEL_BASE   = 20    # velocidad en recto. Se sale en curvas -> bajar a 16 o 14
+VEL_SUAVE  = 12    # rueda interior en corrección leve. Zigzaguea -> subir a 15
+VEL_FUERTE = 4     # rueda interior en corrección fuerte. No gira lo suficiente -> bajar a 2
+PERIODO_S  = 0.1   # intervalo mínimo entre muestras (la tasa real la pone el bucle)
+CADA_PANTALLA = 10 # refrescar la pantalla del robot 1 de cada N muestras (es lenta)
+DIAM_RUEDA_CM = 4.8  # diámetro de rueda para dist_cm — calibrar rodando 100 cm
+PIN_VOLTAJE = None   # poner "S1" cuando esté montado el divisor de voltaje
 ```
 
 El seguimiento de línea se ejecuta en **cada vuelta** del bucle (para ir fluido), mientras que
-el registro de datos está **limitado a cada `PERIODO_S`** para no saturar el enlace USB.
+el registro de datos está **limitado a cada `PERIODO_S`** y la pantalla a 1 de cada
+`CADA_PANTALLA` muestras para no frenar la captura.
