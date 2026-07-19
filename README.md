@@ -171,9 +171,10 @@ proyecto/
     └── Informe_Prueba_Captura_MARS-ROBOT.docx ← informe de la 1ª prueba (APA)
 ```
 
-> 📌 Nota: existió también un `Informe_Avances_MARS-ROBOT.docx` (informe de avances con
-> introducción, marco teórico y referencias en APA), pero **ya no está en la carpeta** (fue
-> movido o eliminado). Se genera con `python-docx`; puede volver a crearse si se necesita.
+> 📌 `docs/Informe_Avances_MARS-ROBOT.docx` (recreado el 19/07/2026) es el informe de
+> avances actualizado: resume la 1ª prueba y documenta las mejoras (20 columnas, encoder,
+> divisor de voltaje, panel web). Tiene 4 marcadores en rojo donde insertar capturas de
+> pantalla del panel. Se genera con `python-docx`.
 
 ---
 
