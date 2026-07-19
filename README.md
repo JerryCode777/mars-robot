@@ -1,8 +1,10 @@
 # MARS-ROBOT
 
-Sistema de captación de datos del recorrido de un vehículo (mBot2) sobre un terreno de
-inclinación variable. **Curso: Programación de Sistemas — UNSA, semestre 2026-A.**
-Equipo de 6 integrantes.
+**Sistema de Captación de Datos del Recorrido de un Vehículo sobre una Plataforma de
+Inclinación Variable.** Curso: Programación de Sistemas — UNSA, semestre 2026-A.
+
+**Integrantes:** Quispe Puma, Usiel Suriel · Chirinos Rojas, Kennedy ·
+Huaynacho Mango, Jerry Anderson · Velazque Quispe, Flor de Liz
 
 > **Este README es también el documento de traspaso del proyecto.** Contiene hallazgos de
 > plataforma no obvios que costaron mucho tiempo descubrir. **Léelo completo antes de tocar
