@@ -360,8 +360,25 @@ def main():
     Manejador.config = {"modo": modo, "puerto": args.puerto, "baud": args.baud,
                         "salida": args.salida, "replay": args.replay, "factor": args.factor}
 
-    servidor = ThreadingHTTPServer(("127.0.0.1", args.web), Manejador)
-    print("Panel disponible en  http://localhost:{}".format(args.web))
+    # Si el puerto está ocupado (p. ej. quedó otro dashboard abierto), probar
+    # los siguientes en vez de morir con un traceback.
+    servidor = None
+    puerto_web = args.web
+    for intento in range(10):
+        try:
+            servidor = ThreadingHTTPServer(("127.0.0.1", args.web + intento), Manejador)
+            puerto_web = args.web + intento
+            break
+        except OSError:
+            continue
+    if servidor is None:
+        print("ERROR: no se encontró un puerto libre entre {} y {}.".format(args.web, args.web + 9))
+        print("¿Hay varios dashboard corriendo? Ciérralos (Ctrl+C en sus terminales)")
+        print("o elige otro puerto con:  python3 tools/dashboard.py --web 9000")
+        raise SystemExit(1)
+    if puerto_web != args.web:
+        print("Aviso: el puerto {} estaba ocupado (¿quedó otro dashboard abierto?).".format(args.web))
+    print("Panel disponible en  http://localhost:{}".format(puerto_web))
     print("La captura se inicia desde el panel con el botón 'Iniciar captura'. Ctrl+C para salir.")
     try:
         servidor.serve_forever()
