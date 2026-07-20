@@ -123,6 +123,10 @@ def procesar_linea(linea, datos, archivo_csv):
         if archivo_csv:
             archivo_csv.write(linea + "\n")
             archivo_csv.flush()
+    else:
+        # Línea que no es CSV (p. ej. la salida de las sondas de diagnóstico):
+        # mostrarla en esta terminal para no perderla
+        print(linea)
 
 
 # ---------------------------------------------------------------------
