@@ -165,6 +165,7 @@ def leer_extras():
 #   -1 = línea hacia un lado   ·   +1 = hacia el otro   ·   0 = centrada
 _ultimo_lado = 0
 _ultimo_estado = 6      # último estado válido del sensor (arranca como "centrado")
+_error_sensor = False   # ya se reportó un error del sensor de línea
 
 
 def seguir_linea():
@@ -173,14 +174,19 @@ def seguir_linea():
     Recto = drive_speed(v, -v)  (el motor derecho lleva signo negativo).
     Devuelve (estado_sensor, vel_comandada).
     """
-    global _ultimo_lado, _ultimo_estado
-    # El bus mBuild puede fallar esporádicamente (sobre todo ahora que también
-    # se lee get_offset_track en cada muestra): si esta lectura falla, se usa
-    # el último estado conocido en vez de detener el programa.
+    global _ultimo_lado, _ultimo_estado, _error_sensor
+    # El bus mBuild puede fallar (lectura esporádica perdida o sensor
+    # desconectado): si la lectura falla, se usa el último estado conocido en
+    # vez de detener el programa, y el error real se reporta UNA vez por USB
+    # y en la pantalla para poder diagnosticarlo.
     try:
         estado = mbuild.quad_rgb_sensor.get_ground_sta("all", IDX_QUAD)
         _ultimo_estado = estado
-    except:
+    except Exception as e:
+        if not _error_sensor:
+            _error_sensor = True
+            print("# ERROR sensor de linea:", repr(e))
+            cyberpi.display.show_label("ERR sensor linea!", 12, 0, 60, index=3)
         estado = _ultimo_estado
 
     # --- CENTRADO: sondas centrales sobre la línea ---

@@ -113,6 +113,7 @@ def procesar_linea(linea, datos, archivo_csv):
             archivo_csv.flush()
         return
     if linea.startswith("#"):
+        print(linea)                    # mostrar comentarios/errores del robot
         if "fin" in linea.lower():
             datos.marcar_fin()
         return
